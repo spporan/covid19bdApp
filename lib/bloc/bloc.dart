@@ -31,6 +31,7 @@ class CovidBloc extends Bloc<CovidEvent,CovidState>{
         yield CovidBdState(covidBdData:covidBdData,allData: allData);
 
       }catch(e){
+        yield CovidErrorState(error: e.toString());
 
       }
 

@@ -10,7 +10,13 @@ class Repository{
   }
 
   Future<Response> getCovidBdData(String param){
-    return _apiService.getCovidData(param);
+    try{
+      return _apiService.getCovidData(param);
+    }catch(e){
+      print("Error :${e.toString()}");
+
+      throw Exception();
+    }
   }
   Future<Response> getCovidAllData(String param){
     return _apiService.getCovidData(param);

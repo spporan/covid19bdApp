@@ -196,6 +196,16 @@ Map<String, double> dataMapAll = new Map();
 
                     }
                     else if(state is CovidErrorState){
+                      return Align(
+                        alignment: Alignment.center,
+                        child:  Container(
+                          color: primaryColorDark,
+                          height: MediaQuery.of(context).size.height,
+                          child:  Center(
+                            child: Text("Something went wrong!",style: TextStyle(color: Colors.white,fontSize: 18),),
+                          ),
+                        ),
+                      );
 
                     }
                     return Container();
