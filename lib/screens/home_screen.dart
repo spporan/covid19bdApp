@@ -388,13 +388,16 @@ class _MyHomePageState extends State<MyHomePage> {
     }
    if( covidDailyData!=null) {
      if(text.length>2){
-       covidDailyData.forEach((item) {
-         if (item.country.toLowerCase().contains(text.toLowerCase())){
-           searchResult.add(item);
-           FocusScope.of(context).requestFocus(FocusNode());
-           setState(() {});
-         }
+       Future.delayed(Duration(milliseconds: 1000)).then((_){
+         covidDailyData.forEach((item) {
+           if (item.country.toLowerCase().contains(text.toLowerCase())){
+             searchResult.add(item);
+             FocusScope.of(context).requestFocus(FocusNode());
+             setState(() {});
+           }
+         });
        });
+
 
    }
 
