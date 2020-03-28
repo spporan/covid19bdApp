@@ -28,15 +28,69 @@ class _MyHomePageState extends State<MyHomePage> {
   List<CovidBdData>searchResult=List();
   List<CovidBdData>covidDailyData;
   FocusNode _focusNode = FocusNode();
+  ScrollController scrollController;
+  String query;
+
+  @override
+  void dispose() {
+    controller.dispose();
+    scrollController.dispose();
+
+    super.dispose();
+  }
   @override
   void initState() {
+    scrollController=ScrollController();
+    _focusNode.addListener((){
+      print("fucus");
+
+
+    });
+
+
+
+    controller.addListener((){
+
+     if(covidDailyData!=null){
+       print("check cont :${controller.text.toString()}");
+       if(controller.text.length>=3 && controller.text.toString() !=query ){
+         print("check:<><><");
+
+         Future.delayed(Duration(milliseconds: 1000),(){
+           searchResult.clear();
+           print("searchResult :${searchResult.length}");
+
+           query=controller.text.toString();
+           print("deleyed :${controller.text.length}");
+           covidDailyData.forEach((item) {
+             if (item.country.toLowerCase().contains(controller.text.toString().toLowerCase())){
+               print("query :$query");
+               print("item :${item.country}");
+               searchResult.add(item);
+
+             }
+           });
+            FocusScope.of(context).requestFocus(FocusNode());
+            setState(() {});
+
+         });
+       }
+     }
+      if(controller.text.isEmpty){
+        searchResult.clear();
+        setState(() {});
+      }
+    },
+
+    );
+
 
     super.initState();
   }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomPadding: false,
+      resizeToAvoidBottomInset:true,
       backgroundColor: primaryColor,
       appBar: AppBar(
         title: Text("Covid19 BD"),
@@ -44,58 +98,60 @@ class _MyHomePageState extends State<MyHomePage> {
       body:  BlocProvider<CovidBloc>(
           create: (BuildContext context) =>  CovidBloc(repository: Repository())..add(CovidBdDataEvent(param:"countries/bangladesh",paramAll: "all",paramDailyUpdate: "countries")),
           child:SingleChildScrollView(
-            child:  Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                BlocBuilder<CovidBloc,CovidState>(
-                  builder: (context,state){
-                    if(state is CovidLoadingState){
-                      return Align(
-                        alignment: Alignment.center,
-                        child:  Container(
-                          color: primaryColorDark,
-                          height: MediaQuery.of(context).size.height,
-                          child:  Center(
-                            child: CircularProgressIndicator(
-                              backgroundColor:primaryColor ,
+            controller: scrollController,
+            child: GestureDetector(
+              child:   Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  BlocBuilder<CovidBloc,CovidState>(
+                    builder: (context,state){
+                      if(state is CovidLoadingState){
+                        return Align(
+                          alignment: Alignment.center,
+                          child:  Container(
+                            color: primaryColorDark,
+                            height: MediaQuery.of(context).size.height,
+                            child:  Center(
+                              child: CircularProgressIndicator(
+                                backgroundColor:primaryColor ,
+                              ),
                             ),
                           ),
-                        ),
-                      );
-                    }else if(state is CovidBdState){
-                      if(state.covidBdData !=null){
-                        dataMap.putIfAbsent("Confirmed", () => state.covidBdData.cases.toDouble());
-                        dataMap.putIfAbsent("Recovered", () => state.covidBdData.recovered.toDouble());
-                        dataMap.putIfAbsent("Deaths", () => state.covidBdData.deaths.toDouble());
-                        return Padding(padding: EdgeInsets.all(10),
-                          child: Card(
-                            elevation: 0,
-                            color: colorDarkGray,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10)
-                            ),
-                            child: Container(
-                              padding: EdgeInsets.all(20),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: <Widget>[
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: <Widget>[
-                                      Text("Bangladesh Covid 19",style: TextStyle(fontSize: 18),),
-                                    ],
-                                  ),
-                                  SizedBox(height: 20,),
-                                  Align(
-                                      alignment: Alignment.centerLeft,
-                                      child:getChart(dataMap,[confirmedColor,recoveredColor,deathColor])
-                                  ),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: <Widget>[
-                                     _getItem(state.covidBdData.deaths+state.covidBdData.recovered+state.covidBdData.cases,"Reported cases"),
-                                    ],
-                                  ),
+                        );
+                      }else if(state is CovidBdState){
+                        if(state.covidBdData !=null){
+                          dataMap.putIfAbsent("Confirmed", () => state.covidBdData.cases.toDouble());
+                          dataMap.putIfAbsent("Recovered", () => state.covidBdData.recovered.toDouble());
+                          dataMap.putIfAbsent("Deaths", () => state.covidBdData.deaths.toDouble());
+                          return Padding(padding: EdgeInsets.all(10),
+                            child: Card(
+                              elevation: 0,
+                              color: colorDarkGray,
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10)
+                              ),
+                              child: Container(
+                                padding: EdgeInsets.all(20),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: <Widget>[
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: <Widget>[
+                                        Text("Bangladesh Covid 19",style: TextStyle(fontSize: 18),),
+                                      ],
+                                    ),
+                                    SizedBox(height: 20,),
+                                    Align(
+                                        alignment: Alignment.centerLeft,
+                                        child:getChart(dataMap,[confirmedColor,recoveredColor,deathColor])
+                                    ),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: <Widget>[
+                                        _getItem(state.covidBdData.deaths+state.covidBdData.recovered+state.covidBdData.cases,"Reported cases"),
+                                      ],
+                                    ),
 
 //                                  Row(
 //                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -115,178 +171,187 @@ class _MyHomePageState extends State<MyHomePage> {
 //                                    ],
 //                                  )
 
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                        );
+                          );
+                        }
+                        return Container();
                       }
+
+                      else if(state is CovidErrorState){
+                        return Container();
+                      }
+
                       return Container();
-                    }
 
-                    else if(state is CovidErrorState){
-                      return Container();
-                    }
+                    },
+                  ),
+                  BlocBuilder<CovidBloc,CovidState>(
+                    builder: (context,state){
+                      if(state is CovidBdState){
+                        if(state.allData !=null){
+                          print("CovidBdState ${state.allData}");
+                          dataMapAll.putIfAbsent("Confirmed ", () => state.allData.cases.toDouble());
+                          dataMapAll.putIfAbsent("Recovered", () => state.allData.recovered.toDouble());
+                          dataMapAll.putIfAbsent("Deaths", () => state.allData.deaths.toDouble());
+                          return Padding(padding: EdgeInsets.only(bottom: 10,right: 10,left: 10),
+                            child: Card(
+                              color: colorDarkGray,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10)
+                              ),
+                              child: Container(
+                                padding: EdgeInsets.all(20),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: <Widget>[
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: <Widget>[
+                                        Text("World Covid 19 ",style: TextStyle(fontSize: 18),),
+                                        Column(
+                                          children: <Widget>[
+                                            Text("Updated on",style: TextStyle(fontSize: 12,color:Colors.blueGrey ),),
+                                            SizedBox(height: 10,),
+                                            Text(" ${formatTimestamp(state.allData.updated)}",),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                    SizedBox(height: 20,),
+                                    Align(
+                                        alignment: Alignment.topCenter,
+                                        child: getChart(dataMapAll,[confirmedColor,recoveredColor,deathColor])
+                                    ),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: <Widget>[
+                                        _getItem(state.allData.deaths+state.allData.recovered+state.allData.cases,"Reported Cases"),
+                                      ],
+                                    ),
 
-                    return Container();
-
-                  },
-                ),
-                BlocBuilder<CovidBloc,CovidState>(
-                  builder: (context,state){
-                    if(state is CovidBdState){
-                      if(state.allData !=null){
-                        print("CovidBdState ${state.allData}");
-                        dataMapAll.putIfAbsent("Confirmed ", () => state.allData.cases.toDouble());
-                        dataMapAll.putIfAbsent("Recovered", () => state.allData.recovered.toDouble());
-                        dataMapAll.putIfAbsent("Deaths", () => state.allData.deaths.toDouble());
-                        return Padding(padding: EdgeInsets.only(bottom: 10,right: 10,left: 10),
-                          child: Card(
-                            color: colorDarkGray,
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10)
-                            ),
-                            child: Container(
-                              padding: EdgeInsets.all(20),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: <Widget>[
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: <Widget>[
-                                      Text("World Covid 19 ",style: TextStyle(fontSize: 18),),
-                                      Column(
-                                        children: <Widget>[
-                                          Text("Updated on",style: TextStyle(fontSize: 12,color:Colors.blueGrey ),),
-                                          SizedBox(height: 10,),
-                                          Text(" ${formatTimestamp(state.allData.updated)}",),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(height: 20,),
-                                  Align(
-                                      alignment: Alignment.topCenter,
-                                      child: getChart(dataMapAll,[confirmedColor,recoveredColor,deathColor])
-                                  ),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: <Widget>[
-                                      _getItem(state.allData.deaths+state.allData.recovered+state.allData.cases,"Reported Cases"),
-                                    ],
-                                  ),
-
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                        );
-                      }
-
-                    }
-                    else if(state is CovidErrorState){
-                      return Align(
-                        alignment: Alignment.center,
-                        child:  Container(
-                          color: primaryColorDark,
-                          height: MediaQuery.of(context).size.height,
-                          child:  Center(
-                            child: Text("Something went wrong!",style: TextStyle(color: Colors.white,fontSize: 18),),
-                          ),
-                        ),
-                      );
-
-                    }
-                    return Container();
-
-                  },
-                ),
-               Container(
-                 alignment: Alignment.centerLeft,
-                 margin: EdgeInsets.only(left: 20),
-                 child: Text("Daily Update",style: TextStyle(color: recoveredColor,fontSize: 18),)
-                 ,
-               ),
-                SizedBox(
-                  height: 10,
-                ),
-               InkWell(
-                 splashColor: Colors.transparent,
-                 onTap: (){
-                   FocusScope.of(context).requestFocus(FocusNode());
-                 },
-                 child: Padding(padding: EdgeInsets.only(
-                     left: 20,
-                     right: 20
-                 ),
-                   child: TextField(
-                     controller: controller,
-                     focusNode: _focusNode,
-                     onChanged: onSearchTextChanged,
-                     decoration: new InputDecoration(
-                       border: new OutlineInputBorder(
-                         borderRadius: const BorderRadius.all(
-                           const Radius.circular(7.0),
-                         ),
-                       ),
-                       filled: true,
-                       hintStyle: new TextStyle(color: Colors.grey[800],),
-                       hintText: "Type country...",
-                       prefixIcon: Icon(Icons.search,color: Colors.blueGrey,),
-                       fillColor: Colors.transparent,
-
-                     ),
-                   ),
-                 ) ,
-               ),
-                SizedBox(
-                  height: 10,
-                ),
-                BlocBuilder<CovidBloc,CovidState>(
-                  builder: (context,state){
-                    if(state is CovidBdState){
-                      if(state.dailyUpdateList !=null||state.dailyUpdateList.length>0){
-                       covidDailyData=state.dailyUpdateList;
-
-                        if(covidDailyData[0].country.toLowerCase() !='bangladesh'){
-                          covidDailyData.removeWhere((item) {
-                            return item.country.toLowerCase() == 'bangladesh';
-                          } );
-                          if(state.covidBdData!=null){
-                            covidDailyData.insert(0, state.covidBdData);
-                          }else{
-                            covidDailyData=state.dailyUpdateList;
-                          }
-
+                          );
                         }
 
-                        covidDailyData.where((item) => item.country.toLowerCase().contains("ban")).toList();
-
-                        return searchResult.length !=0||controller.text.length>2? ListView.builder(
-                          itemCount: searchResult.length,
-                            shrinkWrap: true,
-                            physics: NeverScrollableScrollPhysics(),
-                            itemBuilder:(context,index){
-                              return getDailyUpdateItems(searchResult[index]) ;
-                            }
-                        ) : ListView.builder(
-                            itemCount: covidDailyData.length,
-                            shrinkWrap: true,
-                            physics: NeverScrollableScrollPhysics(),
-                            itemBuilder:(context,index){
-                              return getDailyUpdateItems(covidDailyData[index]) ;
-                            }
-                        );
                       }
-                    }
-                    return Container();
+                      else if(state is CovidErrorState){
+                        return Align(
+                          alignment: Alignment.center,
+                          child:  Container(
+                            color: primaryColorDark,
+                            height: MediaQuery.of(context).size.height,
+                            child:  Center(
+                              child: Text("Something went wrong!",style: TextStyle(color: Colors.white,fontSize: 18),),
+                            ),
+                          ),
+                        );
 
-                  },
-                )
+                      }
+                      return Container();
 
-              ],
-            ),
+                    },
+                  ),
+                  Container(
+                    alignment: Alignment.centerLeft,
+                    margin: EdgeInsets.only(left: 20),
+                    child: Text("Daily Update",style: TextStyle(color: recoveredColor,fontSize: 18),)
+                    ,
+                  ),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  Padding(padding: EdgeInsets.only(
+                      left: 20,
+                      right: 20
+                  ),
+                    child: TextField(
+
+                      controller: controller,
+                      focusNode: _focusNode,
+
+                      decoration: new InputDecoration(
+                          border: new OutlineInputBorder(
+                            borderRadius: const BorderRadius.all(
+                              const Radius.circular(7.0),
+                            ),
+                          ),
+                          filled: true,
+                          hintStyle: new TextStyle(color: Colors.grey[800],),
+                          hintText: "Type country...",
+                          prefixIcon: Icon(Icons.search,color: Colors.blueGrey,),
+                          fillColor: Colors.transparent,
+                          suffix: InkWell(
+                            child: Icon(Icons.clear),
+                            onTap: (){
+                              controller.text="";
+                              FocusScope.of(context).requestFocus(FocusNode());
+                            },
+                          )
+
+                      ),
+                    ),
+                  ) ,
+
+                  SizedBox(
+                    height: 10,
+                  ),
+                  BlocBuilder<CovidBloc,CovidState>(
+                    builder: (context,state){
+                      if(state is CovidBdState){
+                        if(state.dailyUpdateList !=null||state.dailyUpdateList.length>0){
+                          covidDailyData=state.dailyUpdateList;
+
+                          if(covidDailyData[0].country.toLowerCase() !='bangladesh'){
+                            covidDailyData.removeWhere((item) {
+                              return item.country.toLowerCase() == 'bangladesh';
+                            } );
+                            if(state.covidBdData!=null){
+                              covidDailyData.insert(0, state.covidBdData);
+                            }else{
+                              covidDailyData=state.dailyUpdateList;
+                            }
+
+                          }
+
+                          covidDailyData.where((item) => item.country.toLowerCase().contains("ban")).toList();
+
+                          return searchResult.length !=0||controller.text.length>2? ListView.builder(
+                              itemCount: searchResult.length,
+                              shrinkWrap: true,
+                              physics: NeverScrollableScrollPhysics(),
+                              itemBuilder:(context,index){
+                                return getDailyUpdateItems(searchResult[index]) ;
+                              }
+                          ) : ListView.builder(
+                              itemCount: covidDailyData.length,
+                              shrinkWrap: true,
+                              physics: NeverScrollableScrollPhysics(),
+                              itemBuilder:(context,index){
+                                return getDailyUpdateItems(covidDailyData[index]) ;
+                              }
+                          );
+                        }
+                      }
+                      return Container();
+
+                    },
+                  )
+
+                ],
+              ),
+              onTap: (){
+                FocusScope.of(context).requestFocus(new FocusNode());
+              },
+            )
+
+
           )
       ),
 
@@ -380,28 +445,5 @@ class _MyHomePageState extends State<MyHomePage> {
       chartType: ChartType.ring,
     );
   }
-  onSearchTextChanged(String text) async {
-    searchResult.clear();
-    if (text.isEmpty) {
-      setState(() {});
-      return;
-    }
-   if( covidDailyData!=null) {
-     if(text.length>2){
-       Future.delayed(Duration(milliseconds: 1000)).then((_){
-         covidDailyData.forEach((item) {
-           if (item.country.toLowerCase().contains(text.toLowerCase())){
-             searchResult.add(item);
-             FocusScope.of(context).requestFocus(FocusNode());
-             setState(() {});
-           }
-         });
-       });
-
-
-   }
-
-  }
-}
 
 }
