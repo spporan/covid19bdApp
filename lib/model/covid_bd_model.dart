@@ -6,15 +6,15 @@ CovidBdData covidBdDataFromJson(String str) => CovidBdData.fromJson(json.decode(
 String covidBdDataToJson(CovidBdData data) => json.encode(data.toJson());
 
 class CovidBdData {
-  String country;
-  int cases;
-  int todayCases;
-  int deaths;
-  int todayDeaths;
-  int recovered;
-  int active;
-  int critical;
-  int casesPerOneMillion;
+  dynamic country;
+  dynamic cases;
+  dynamic todayCases;
+  dynamic deaths;
+  dynamic todayDeaths;
+  dynamic recovered;
+  dynamic active;
+  dynamic critical;
+  dynamic casesPerOneMillion;
 
   CovidBdData({
     this.country,
