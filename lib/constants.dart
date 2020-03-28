@@ -28,8 +28,9 @@ String formatTimestamp(int timestamp) {
   var date = new DateTime.fromMillisecondsSinceEpoch(timestamp);
   return format.format(date);
 }
-getFormattedNumber({int number}){
-  return new NumberFormat("#,###").format(number);
+getFormattedNumber({dynamic number}){
+  number=number??0;
+  return number>0?NumberFormat( number is int?"#,###":"#,###0.00").format(number):number.toString();
 }
 final Color deathColor=Color(0xFFF76353);
 final Color recoveredColor=Color(0xFF00CC99);
