@@ -39,6 +39,6 @@ final Color primaryColor=Color(0xFF171B1E);
 final Color primaryColorDark=Color(0xFF171B1E);
 final Color colorAccent=Color(0xFF535AF6);
 final Color colorDarkGray=Color(0xFF1B232F);
- final Color itemColor=Color(0xFFFFFFFF);
+final Color itemColor=Color(0xFFFFFFFF);
 
 
